@@ -20,5 +20,17 @@ export const colors = {
   metro: '#C084FC',
   walk: '#A7F3D0',
 
+  // Cores das linhas de metrô (versões claras para ler sobre o azul-marinho)
+  lineGreen: '#2BB673',
+  lineYellow: '#FFD400',
+  lineBlue: '#4A8DF0',
+
+  // Mapa simulado
+  mapGround: '#102B52',
+  mapStreet: '#2E4C7A',
+  mapStreetMajor: '#4C6FA5',
+  mapPark: '#1D5A45',
+  mapLabel: '#9FB4D4',
+
   transparent: 'transparent',
 };

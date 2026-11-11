@@ -2,9 +2,14 @@
  * Camada de serviços: tudo o que as telas precisam saber sobre ônibus,
  * linhas e rotas passa por aqui. As telas nunca leem o mock diretamente.
  */
+import { colors } from '../constants/colors';
 import {
+  BUS_APPROACH,
   DESTINATIONS,
   LINES,
+  MAP_PLACES,
+  MAP_STOP,
+  MAP_STREETS,
   NEARBY_DESTINATIONS,
   NEARBY_STOPS,
   TOTEM_STOP,
@@ -13,8 +18,10 @@ import {
 } from '../constants/mockData';
 import type {
   Arrival,
+  BusMapData,
   BusStop,
   Crowding,
+  DiagramLeg,
   DestinationHint,
   LineCheck,
   LineDetails,
@@ -26,6 +33,7 @@ import type {
   Line,
 } from '../types';
 import { normalizeText } from '../utils/format';
+import { pathLengthMeters } from '../utils/geo';
 import { ApiError, request } from './apiClient';
 
 const MINUTE = 60_000;
@@ -86,6 +94,43 @@ function titleFor(legs: RouteLeg[]): string {
   return parts.join(' + ');
 }
 
+/** Transforma os trechos em passos prontos para o desenho do trajeto. */
+function buildDiagram(legs: RouteLeg[]): DiagramLeg[] {
+  return legs.map((leg) => {
+    const line = leg.lineId ? findLine(leg.lineId) : undefined;
+    const base: DiagramLeg = {
+      mode: leg.mode,
+      label: leg.label,
+      minutes: leg.minutes,
+      transfer: leg.transfer ?? false,
+      color: line?.color ?? (leg.mode === 'onibus' ? colors.bus : leg.mode === 'metro' ? colors.metro : colors.walk),
+      between: [],
+    };
+    if (!line) return base;
+
+    const fromIndex = leg.from ? line.stops.indexOf(leg.from) : -1;
+    const toIndex = leg.to ? line.stops.indexOf(leg.to) : -1;
+    const known = fromIndex >= 0 && toIndex >= 0;
+    const forward = toIndex > fromIndex;
+
+    return {
+      ...base,
+      lineCode: line.code,
+      lineName: line.name,
+      from: leg.from,
+      to: leg.to,
+      // Metrô: o sentido é a última estação da linha na direção da viagem
+      direction:
+        known && line.mode === 'metro' ? (forward ? line.stops[line.stops.length - 1] : line.stops[0]) : undefined,
+      between: known
+        ? forward
+          ? line.stops.slice(fromIndex + 1, toIndex)
+          : line.stops.slice(toIndex + 1, fromIndex).reverse()
+        : [],
+    };
+  });
+}
+
 function buildOption(id: string, legs: RouteLeg[], now: number): Omit<RouteOption, 'isBest' | 'highlight'> {
   let cursor = now;
   let waitMs: number | null = null;
@@ -121,6 +166,7 @@ function buildOption(id: string, legs: RouteLeg[], now: number): Omit<RouteOptio
     transfers: Math.max(0, transitCount - 1),
     crowding,
     accessible,
+    diagram: buildDiagram(legs),
   };
 }
 
@@ -212,6 +258,25 @@ export function getNextArrivals(): Promise<Arrival[]> {
   return request(() => buildArrivalsAtStop(Date.now()));
 }
 
+/**
+ * Mapa simulado: o próximo ônibus de cada linha deste ponto e o caminho que ele
+ * faz até aqui. A tela calcula onde ele está a cada segundo, pelo horário previsto.
+ */
+export function getBusMap(): Promise<BusMapData> {
+  return request(() => {
+    const now = Date.now();
+    const buses = busesHere()
+      .filter((line) => BUS_APPROACH[line.id])
+      .map((line) => {
+        const path = BUS_APPROACH[line.id];
+        const arrival = toArrival(line, departuresAfter(line, now + MIN_LEAD_MS, 1)[0]);
+        return { arrival, path, pathMeters: pathLengthMeters(path) };
+      })
+      .sort((a, b) => a.arrival.arrivalAt - b.arrival.arrivalAt);
+    return { stop: MAP_STOP, streets: MAP_STREETS, places: MAP_PLACES, buses };
+  });
+}
+
 export function getLineDetails(lineId: string): Promise<LineDetails> {
   return request(() => {
     const line = findLine(lineId);
@@ -268,7 +333,14 @@ export function getNearbyStopRoute(query: string): Promise<NearbyStopResult | nu
     const now = Date.now();
     const legs: RouteLeg[] = [
       { mode: 'caminhada', label: `Caminhe até o ${stop.name} (${stop.distanceMeters} m)`, minutes: stop.walkMinutes },
-      { mode: 'onibus', lineId: line.id, label: `Ônibus ${line.code} até ${destination.name}`, minutes: destination.rideMinutes },
+      {
+        mode: 'onibus',
+        lineId: line.id,
+        label: `Ônibus ${line.code} até ${destination.name}`,
+        minutes: destination.rideMinutes,
+        from: line.stops[0],
+        to: line.stops[line.stops.length - 1],
+      },
     ];
     const option: RouteOption = {
       ...buildOption(`${destination.id}-outro-ponto`, legs, now),
@@ -287,6 +359,7 @@ export function getNearbyStopRoute(query: string): Promise<NearbyStopResult | nu
       option,
       linesThere: buildLineChecks(linesAtStop, (l) => l.id === line.id, reachStopAt),
       linesHere: buildLineChecks(busesHere(), () => false, now),
+      map: { stop: MAP_STOP, streets: MAP_STREETS, places: MAP_PLACES },
     };
   });
 }

@@ -8,6 +8,7 @@ import LineCheckCard from '../components/LineCheckCard';
 import Loading from '../components/Loading';
 import Message from '../components/Message';
 import RouteCard from '../components/RouteCard';
+import WalkMap from '../components/WalkMap';
 import WalkPath from '../components/WalkPath';
 import { TOTEM_STOP } from '../constants/mockData';
 import { colors, fonts, spacing, radius, borders, letterSpacing } from '../constants/theme';
@@ -28,6 +29,7 @@ export default function OutroPonto() {
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
   const [now, setNow] = useState(Date.now());
+  const [showMap, setShowMap] = useState(false);
 
   useEffect(() => {
     const clock = setInterval(() => setNow(Date.now()), 1000);
@@ -132,7 +134,20 @@ export default function OutroPonto() {
         </View>
       </View>
 
-      <RouteCard option={option} onPressLine={openLine} />
+      <RouteCard
+        option={option}
+        origin={TOTEM_STOP.name}
+        destination={destinationName}
+        action={{
+          title: showMap ? 'Esconder o mapa' : 'Como chegar no ponto certo',
+          icon: showMap ? 'chevron-up-outline' : 'map-outline',
+          hint: `Mostra no mapa o caminho a pé até o ${stop.name}`,
+          onPress: () => setShowMap((v) => !v),
+        }}
+      />
+
+      {/* Mapa com o caminho a pé até o ponto certo */}
+      {showMap && <WalkMap map={result.map} to={stop} busCode={busCode} />}
 
       {/* Caminho a pé */}
       <View style={styles.section}>

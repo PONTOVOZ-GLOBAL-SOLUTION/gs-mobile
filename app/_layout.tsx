@@ -23,6 +23,7 @@ export default function RootLayout() {
           <Stack.Screen name="outro-ponto" options={{ title: 'Pegue em outro ponto' }} />
           <Stack.Screen name="linha/[id]" options={{ title: 'Detalhes da linha' }} />
           <Stack.Screen name="historico" options={{ title: 'Buscas recentes' }} />
+          <Stack.Screen name="mapa" options={{ title: 'Ônibus no mapa' }} />
         </Stack>
       </HistoryProvider>
     </DatabaseProvider>

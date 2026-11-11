@@ -9,6 +9,10 @@ export const fonts = {
   large: 26,
   title: 32,
   huge: 48,
+  // Só para rótulos dentro do mapa simulado. A mesma informação sempre aparece
+  // também em texto grande na lista embaixo do mapa.
+  mapLabel: 12,
+  mapStrong: 14,
 };
 
 export const spacing = {
@@ -42,6 +46,7 @@ export const sizes = {
   lineBadgeMax: 96,
   timeBoxMin: 84,
   dot: 16,
+  mapMinHeight: 240,
 };
 
 export const letterSpacing = 1;

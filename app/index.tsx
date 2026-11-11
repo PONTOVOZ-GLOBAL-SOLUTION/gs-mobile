@@ -99,6 +99,14 @@ export default function Home() {
           <Button small variant="secondary" title="Atualizar" icon="refresh-outline" onPress={() => loadArrivals()} />
         </View>
 
+        <Button
+          variant="secondary"
+          title="Ver os ônibus no mapa"
+          icon="map-outline"
+          accessibilityHint="Mostra onde estão os ônibus que estão vindo para este ponto"
+          onPress={() => router.push('/mapa')}
+        />
+
         {loading && <Loading message="Buscando os próximos ônibus..." />}
 
         {!loading && error && (

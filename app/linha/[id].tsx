@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import ArrivalCard from '../../components/ArrivalCard';
+import Button from '../../components/Button';
 import Loading from '../../components/Loading';
 import Message from '../../components/Message';
 import Tag, { MODE_INFO } from '../../components/Tag';
@@ -14,6 +15,7 @@ import { LineDetails } from '../../types';
 // TELA 3 — Detalhes de uma linha: próximos horários e paradas.
 export default function LinhaDetalhe() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const [details, setDetails] = useState<LineDetails | null>(null);
@@ -71,7 +73,7 @@ export default function LinhaDetalhe() {
     >
       {/* Cabeçalho da linha */}
       <View style={styles.header}>
-        <View style={[styles.lineBox, { backgroundColor: mode.color }]}>
+        <View style={[styles.lineBox, { backgroundColor: line.color ?? mode.color }]}>
           <Ionicons name={mode.icon} size={fonts.large} color={colors.textDark} />
           <Text style={styles.lineCode}>{line.code}</Text>
         </View>
@@ -97,6 +99,15 @@ export default function LinhaDetalhe() {
           <Message type="empty" title="Sem horários previstos" message="Essa linha não tem veículos chegando agora." />
         ) : (
           arrivals.map((arrival) => <ArrivalCard key={arrival.id} arrival={arrival} now={now} />)
+        )}
+        {line.stopsHere && (
+          <Button
+            variant="secondary"
+            title="Ver este ônibus no mapa"
+            icon="map-outline"
+            accessibilityHint="Mostra onde o próximo ônibus desta linha está agora"
+            onPress={() => router.push({ pathname: '/mapa', params: { linha: line.id } })}
+          />
         )}
       </View>
 

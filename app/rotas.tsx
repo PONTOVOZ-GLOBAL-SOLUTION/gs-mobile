@@ -7,6 +7,7 @@ import LineCheckCard from '../components/LineCheckCard';
 import Loading from '../components/Loading';
 import Message from '../components/Message';
 import RouteCard from '../components/RouteCard';
+import { TOTEM_STOP } from '../constants/mockData';
 import { colors, fonts, spacing, radius, borders, letterSpacing } from '../constants/theme';
 import { useHistory } from '../context/HistoryContext';
 import { listExampleDestinations, searchRoutes } from '../services/busService';
@@ -142,7 +143,13 @@ export default function Rotas() {
             {result.options.length} opções encontradas. A primeira é a que chega mais cedo agora.
           </Text>
           {result.options.map((option) => (
-            <RouteCard key={option.id} option={option} onPressLine={openLine} />
+            <RouteCard
+              key={option.id}
+              option={option}
+              origin={TOTEM_STOP.name}
+              destination={result.destinationName ?? destino}
+              onPressLine={openLine}
+            />
           ))}
           <Button
             variant="secondary"

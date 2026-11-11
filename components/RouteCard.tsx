@@ -1,20 +1,34 @@
+import { ComponentProps, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing, radius, borders } from '../constants/theme';
 import { RouteOption } from '../types';
 import { formatClock, formatDuration } from '../utils/format';
 import Button from './Button';
+import RouteDiagram from './RouteDiagram';
 import Tag, { CROWDING_INFO, MODE_INFO } from './Tag';
 
 type Props = {
   option: RouteOption;
+  origin: string;
+  destination: string;
   onPressLine?: (lineId: string) => void;
+  /** Troca o botão "Ver detalhes da linha" por outra ação. */
+  action?: {
+    title: string;
+    icon: ComponentProps<typeof Button>['icon'];
+    hint?: string;
+    onPress: () => void;
+  };
 };
 
 // Uma alternativa de trajeto. A melhor opção ganha destaque amarelo.
-export default function RouteCard({ option, onPressLine }: Props) {
+// Opções com metrô já abrem com o desenho do trajeto (onde embarcar, baldeação...).
+export default function RouteCard({ option, origin, destination, onPressLine, action }: Props) {
   const firstLineId = option.legs.find((leg) => leg.lineId)?.lineId;
   const isWalkOnly = option.title === 'A pé';
+  const usesMetro = option.legs.some((leg) => leg.mode === 'metro');
+  const [showDiagram, setShowDiagram] = useState(usesMetro);
   const crowding = option.crowding ? CROWDING_INFO[option.crowding] : null;
 
   const waitText = isWalkOnly ? 'Saia agora' : option.waitMinutes <= 1 ? 'Sai agora' : `Sai em ${option.waitMinutes} min`;
@@ -54,22 +68,48 @@ export default function RouteCard({ option, onPressLine }: Props) {
           {option.accessible && !isWalkOnly && <Tag label="Acessível" icon="accessibility-outline" />}
         </View>
 
-        <View style={styles.legs}>
-          {option.legs.map((leg, index) => {
-            const mode = MODE_INFO[leg.mode];
-            return (
-              <View key={index} style={styles.leg}>
-                <Ionicons name={mode.icon} size={fonts.large} color={mode.color} />
-                <Text style={styles.legText}>
-                  {leg.label} · {leg.minutes} min
-                </Text>
-              </View>
-            );
-          })}
-        </View>
+        {!showDiagram && (
+          <View style={styles.legs}>
+            {option.legs.map((leg, index) => {
+              const mode = MODE_INFO[leg.mode];
+              return (
+                <View key={index} style={styles.leg}>
+                  <Ionicons name={mode.icon} size={fonts.large} color={mode.color} />
+                  <Text style={styles.legText}>
+                    {leg.label} · {leg.minutes} min
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        )}
       </View>
 
-      {firstLineId && onPressLine && (
+      {showDiagram && <RouteDiagram origin={origin} destination={destination} legs={option.diagram} />}
+
+      {!isWalkOnly && (
+        <Button
+          small
+          variant="secondary"
+          title={showDiagram ? 'Esconder o trajeto' : usesMetro ? 'Ver o trajeto no metrô' : 'Ver o trajeto'}
+          icon={showDiagram ? 'chevron-up-outline' : 'git-commit-outline'}
+          accessibilityHint="Mostra o desenho do trajeto passo a passo"
+          onPress={() => setShowDiagram((v) => !v)}
+        />
+      )}
+
+      {action && (
+        <Button
+          small
+          variant="secondary"
+          title={action.title}
+          icon={action.icon}
+          accessibilityHint={action.hint}
+          onPress={action.onPress}
+        />
+      )}
+
+      {!action && firstLineId && onPressLine && (
         <Button
           small
           variant="secondary"

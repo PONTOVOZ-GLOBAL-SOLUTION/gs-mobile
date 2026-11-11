@@ -1,10 +1,10 @@
-# 🚏 Parada Inteligente — Totem de ponto de ônibus
+# 🚏 PONTOVOZ — Totem de ponto de ônibus
 
 ## Ficha da CitizenTech
 
 | Campo | Descrição |
 |---|---|
-| **Nome da solução** | Parada Inteligente |
+| **Nome da solução** | PONTOVOZ |
 | **Problema** | Quem espera no ponto não sabe quanto tempo falta para o ônibus, nem se o ônibus que vai chegar leva até o seu destino, nem se existe um caminho mais rápido (outro ônibus, metrô, ir a pé ou pegar em outro ponto perto). Isso gera espera longa, ônibus lotados e passageiros esperando no ponto errado. |
 | **Cidadão atendido** | Passageiros do transporte público, inclusive idosos, pessoas com deficiência e quem não tem celular ou internet móvel. |
 | **Solução** | Um totem com tela de toque instalado no ponto. Ele mostra a contagem regressiva dos próximos ônibus, avisa quais ônibus vão e quais não vão para o destino digitado, compara as alternativas indicando a que chega primeiro e, quando o destino não sai daquele ponto, mostra o ponto mais próximo que atende e o caminho a pé até lá. |
@@ -15,11 +15,11 @@
 
 ## Integrantes
 
-| Nome | RM |
-|---|---|
-| _Nome do integrante_ | RM00000 |
-| _Nome do integrante_ | RM00000 |
-| _Nome do integrante_ | RM00000 |
+| Nome | RM | GitHub |
+|---|---|---|
+| Albert Katri | RM556544 | [@0ldev](https://github.com/0ldev) |
+| Bruno Biletsky | RM554739 | [@Bruno-Biletsky](https://github.com/Bruno-Biletsky) |
+| Paulo Akira | RM556840 | [@pauloakira05](https://github.com/pauloakira05) |
 
 ## Vídeo de demonstração
 
@@ -71,7 +71,8 @@ npm run typecheck   # confere os tipos do TypeScript (tsc --noEmit)
 4. Na tela **Melhores opções**, veja o aviso _"Deste ponto, só o ônibus 7B23 vai para Pinheiros"_ e, no fim, a lista com ✅ **Vai** / ❌ **Não vai** de cada ônibus do ponto.
 5. Volte e digite `aeroporto` → ↪ _Aeroporto de Congonhas — sai de outro ponto (5 min a pé)_. O app abre a tela **Pegue em outro ponto** com o caminho a pé passo a passo.
 6. Digite `Marte` → estado de **lista vazia** ("Não encontramos esse destino").
-7. Abra **Ver buscas recentes**: as buscas feitas foram **salvas no SQLite**. Feche e abra o app de novo — elas continuam lá.
+7. Toque em 🎤 **Falar** e diga, por exemplo, _"Quero ir para Pinheiros"_. No navegador (Chrome/Edge) a fala é transcrita de verdade pela Web Speech API, em português e sem custo. No Expo Go, ou se o microfone for bloqueado, a transcrição é **simulada** com um destino de exemplo. Se só um destino combinar com a fala, o totem abre direto as melhores opções.
+8. Abra **Ver buscas recentes**: as buscas feitas foram **salvas no SQLite**. Feche e abra o app de novo — elas continuam lá.
 
 ---
 
@@ -79,7 +80,7 @@ npm run typecheck   # confere os tipos do TypeScript (tsc --noEmit)
 
 | Critério (pontos) | O que pede | Como o app atende | Onde ver no código |
 |---|---|---|---|
-| **Telas e navegação (2,5)** | Mínimo 3 telas, Expo Router, TypeScript, componentes reutilizáveis e tema centralizado | **5 telas** ligadas à jornada (Início, Melhores opções, Pegue em outro ponto, Detalhes da linha, Buscas recentes), navegação em pilha com **Expo Router** (rotas por arquivo, rota dinâmica `linha/[id]`, `router.replace` para redirecionar). Tudo em **TypeScript**. **10 componentes** reutilizáveis (um por arquivo). Cores, fontes, espaçamentos, bordas e tamanhos vêm só do tema — nenhuma tela usa número ou cor "solta". | [`app/`](app), [`components/`](components), [`constants/theme.ts`](constants/theme.ts), [`constants/colors.ts`](constants/colors.ts), [`types/index.ts`](types/index.ts) |
+| **Telas e navegação (2,5)** | Mínimo 3 telas, Expo Router, TypeScript, componentes reutilizáveis e tema centralizado | **6 telas** ligadas à jornada (Início, Melhores opções, Pegue em outro ponto, Detalhes da linha, Buscas recentes, Ônibus no mapa), navegação em pilha com **Expo Router** (rotas por arquivo, rota dinâmica `linha/[id]`, `router.replace` para redirecionar). Tudo em **TypeScript**. **14 componentes** reutilizáveis (um por arquivo). Cores, fontes, espaçamentos, bordas e tamanhos vêm só do tema — nenhuma tela usa número ou cor "solta". | [`app/`](app), [`components/`](components), [`constants/theme.ts`](constants/theme.ts), [`constants/colors.ts`](constants/colors.ts), [`types/index.ts`](types/index.ts) |
 | **Consumo de dados (2,0)** | API ou mock, estados de loading, erro e vazio, camada de serviços organizada | Dados **mock** servidos por um cliente que simula uma API real (latência de 0,5 a 1,2 s e **10% de falhas**). Toda tela trata **carregamento** (`<Loading>`), **erro** com "Tentar de novo" (`<Message type="error">`) e **lista vazia** (`<Message type="empty">`). As telas **nunca** leem o mock direto: tudo passa pelo `busService`. | [`services/apiClient.ts`](services/apiClient.ts), [`services/busService.ts`](services/busService.ts), [`constants/mockData.ts`](constants/mockData.ts) |
 | **Banco de dados (2,0)** | Dados salvos e recuperados corretamente, acesso ao banco em camada própria | Banco local **SQLite** (`expo-sqlite`). Cada busca é **salva** (destino, melhor opção, tempo, data) e **recuperada** na tela Buscas recentes e nos atalhos da tela inicial; dá para apagar uma ou todas. O SQL fica isolado em um **repositório**; as tabelas são criadas por **migração versionada**; as telas acessam o banco só pelo `useHistory()`. Detalhes na seção [Banco de dados](#banco-de-dados-sqlite-expo-sqlite). | [`database/`](database), [`context/HistoryContext.tsx`](context/HistoryContext.tsx) |
 | **Acessibilidade e usabilidade (1,5)** | Contraste, fontes legíveis, `accessibilityLabel` e linguagem simples | Alto contraste (branco/amarelo sobre azul-marinho), fonte mínima de 16 px, botões com 56 px de altura, `accessibilityLabel`/`Role`/`Hint` em tudo que é tocável, leitura em frases completas, `accessibilityLiveRegion` em carregamento, erro e na verificação da busca. "Vai / Não vai" e lotação sempre têm **ícone + texto**, não só cor. Detalhes na seção [Acessibilidade](#acessibilidade-e-usabilidade). | Todos os [`components/`](components) e telas |
@@ -94,9 +95,10 @@ npm run typecheck   # confere os tipos do TypeScript (tsc --noEmit)
 |---|---|---|
 | **Início do totem** | `app/index.tsx` | Nome do ponto e relógio; campo **"Para onde você vai?"** com **exemplos de destinos** logo abaixo (os que saem deste ponto e os que saem de um ponto perto) e **verificação enquanto digita** (✅ sai deste ponto / 🚶 sai de outro ponto / ❓ não encontrado); atalhos das buscas recentes (do banco); painel **Próximos ônibus** com contagem regressiva, lotação e acessibilidade. Atualiza sozinho a cada 30 s. |
 | **Melhores opções** | `app/rotas.tsx` | Aviso de **quais ônibus deste ponto vão para o destino** ("Deste ponto, só o ônibus 7B23 vai para Pinheiros"); compara as alternativas (ônibus direto, metrô, a pé, baldeação), ordena pela que **chega primeiro** e explica a diferença; no fim, a lista de **todos os ônibus do ponto com ✅ Vai / ❌ Não vai** e quando cada um passa. Se o destino só sai de outro ponto, **redireciona** para a tela abaixo. |
-| **Pegue em outro ponto** | `app/outro-ponto.tsx` | Quando nenhum ônibus deste ponto vai para o destino: mostra o **ponto mais próximo que atende**, o **caminho a pé passo a passo** (distância, tempo, "vire à direita", "atravesse na faixa"...), a opção completa (a pé + ônibus, com horário de chegada), quais ônibus **daquele ponto** vão ou não vão, e confirma que **nenhum ônibus deste ponto** vai. |
+| **Pegue em outro ponto** | `app/outro-ponto.tsx` | Quando nenhum ônibus deste ponto vai para o destino: mostra o **ponto mais próximo que atende**, o **caminho a pé passo a passo** (distância, tempo, "vire à direita", "atravesse na faixa"...), o botão **"Como chegar no ponto certo"**, que abre um mapa com o caminho a pé desenhado do totem até o ponto (com a seta de onde virar e o aviso "Pegue aqui o 875A"), a opção completa (a pé + ônibus, com horário de chegada), quais ônibus **daquele ponto** vão ou não vão, e confirma que **nenhum ônibus deste ponto** vai. |
 | **Detalhes da linha** | `app/linha/[id].tsx` | Próximos 3 horários (neste ponto, no outro ponto ou na estação), intervalo médio, acessibilidade e todas as paradas do trajeto. |
 | **Buscas recentes** | `app/historico.tsx` | Histórico salvo no SQLite: buscar de novo, apagar uma busca ou limpar tudo. |
+| **Ônibus no mapa** | `app/mapa.tsx` | Mapa **simulado** do entorno do ponto com o próximo ônibus de cada linha andando até o totem (posição estimada pelo horário previsto). Tocar em um ônibus destaca o caminho dele. A lista embaixo repete tudo em texto grande, com tempo e distância. |
 
 ### Prints
 
@@ -118,6 +120,7 @@ app/                         # Telas (Expo Router: cada arquivo é uma rota)
   outro-ponto.tsx            # Tela 3 — Pegue em outro ponto (caminho a pé)
   linha/[id].tsx             # Tela 4 — Detalhes da linha
   historico.tsx              # Tela 5 — Buscas recentes (SQLite)
+  mapa.tsx                   # Tela 6 — Ônibus no mapa (simulado)
 components/                  # Componentes reutilizáveis (um por arquivo)
   Button.tsx  Loading.tsx  Message.tsx  Tag.tsx
   ArrivalCard.tsx            # Ônibus chegando (contagem regressiva)
@@ -126,6 +129,10 @@ components/                  # Componentes reutilizáveis (um por arquivo)
   SearchBox.tsx              # Campo de busca + exemplos + verificação ao digitar
   StopHeader.tsx             # "Você está aqui" + relógio
   WalkPath.tsx               # Caminho a pé passo a passo até outro ponto
+  RouteDiagram.tsx           # Desenho do trajeto: embarque, sentido do trem, baldeação, desembarque
+  MapCanvas.tsx              # Base do mapa simulado: ruas, estações e "você está aqui"
+  BusMap.tsx                 # Mapa com os ônibus chegando
+  WalkMap.tsx                # Mapa com o caminho a pé até o ponto certo
 constants/
   colors.ts                  # Paleta de cores
   theme.ts                   # Fontes, espaçamentos, bordas e tamanhos (tema centralizado)
@@ -138,14 +145,18 @@ database/
   searchHistoryRepository.ts # Único lugar com SQL (insert, select, delete)
 services/
   apiClient.ts               # "API" simulada: latência e falhas
-  busService.ts              # Próximos ônibus, rotas, outro ponto, vai/não vai
+  busService.ts              # Próximos ônibus, rotas, outro ponto, vai/não vai, mapa
+  speechService.ts           # Busca por voz (Web Speech API ou simulação)
 types/index.ts               # Tipos TypeScript
 utils/format.ts              # Formatação de horários e textos
+utils/geo.ts                 # Mapa simulado: distância e posição dos ônibus
 ```
 
 ## De onde vêm os dados
 
-Todos os dados são **simulados (mock)**, criados pela equipe em [`constants/mockData.ts`](constants/mockData.ts). **Nenhum dado pessoal ou real é usado.** Linhas, códigos, pontos, caminhos e tempos de viagem são fictícios, inspirados no transporte de uma grande cidade.
+Todos os dados são **simulados (mock)**, criados pela equipe em [`constants/mockData.ts`](constants/mockData.ts). **Nenhum dado pessoal ou real é usado.** Linhas de ônibus, códigos, pontos, caminhos e tempos de viagem são fictícios, inspirados no transporte de São Paulo. As **estações de metrô** seguem a ordem real das Linhas 1-Azul, 2-Verde e 4-Amarela, para que o trajeto desenhado (ex.: Linha Verde até Consolação, baldeação para a Linha Amarela na estação Paulista) faça sentido para quem conhece a cidade. Os horários continuam simulados.
+
+- O **mapa** de [`app/mapa.tsx`](app/mapa.tsx) é um desenho simplificado (não é um serviço de mapas). A distância do ônibus é estimada pelo tempo que falta, a 9 km/h (média com trânsito), em [`utils/geo.ts`](utils/geo.ts).
 
 - Cada linha tem um **intervalo** (ex.: a cada 15 min) e um deslocamento. Os horários são calculados a partir do relógio do aparelho, por isso a contagem regressiva anda de verdade e muda a cada vez que o app é aberto.
 - Um ônibus **"vai para o destino"** quando ele é o primeiro veículo de alguma das opções de rota daquele destino. Os outros ônibus do ponto aparecem como **"não vai"**.

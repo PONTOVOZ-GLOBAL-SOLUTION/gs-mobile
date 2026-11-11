@@ -3,35 +3,42 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, fonts, spacing, radius, borders, sizes, TOUCH_SIZE } from '../constants/theme';
 import { Arrival } from '../types';
 import { formatClock, formatWait, formatWaitSpoken, minutesUntil } from '../utils/format';
+import { distanceToStopMeters, formatDistance, formatDistanceSpoken } from '../utils/geo';
 import Tag, { CROWDING_INFO, MODE_INFO } from './Tag';
 
 type Props = {
   arrival: Arrival;
   now: number;
   onPress?: () => void;
+  hint?: string; // o que acontece ao tocar (leitor de tela)
+  selected?: boolean;
 };
 
-// Um ônibus chegando: código da linha, nome, lotação e contagem regressiva.
-export default function ArrivalCard({ arrival, now, onPress }: Props) {
+// Um ônibus chegando: código da linha, nome, lotação, contagem regressiva e distância.
+export default function ArrivalCard({ arrival, now, onPress, hint = 'Abre os detalhes da linha', selected = false }: Props) {
   const minutes = minutesUntil(arrival.arrivalAt, now);
   const soon = minutes <= 2;
   const mode = MODE_INFO[arrival.mode];
   const crowding = CROWDING_INFO[arrival.crowding];
+  const meters = distanceToStopMeters(arrival.arrivalAt, now);
+  const showDistance = arrival.mode === 'onibus' && minutes > 0; // distância estimada só faz sentido para ônibus
 
   const spokenText =
     `${mode.label} ${arrival.lineCode}, ${arrival.lineName}, ${formatWaitSpoken(minutes)}, ` +
+    (showDistance ? `a cerca de ${formatDistanceSpoken(meters)} daqui, ` : '') +
     `lotação ${crowding.label.toLowerCase()}` +
     (arrival.accessible ? ', acessível para cadeira de rodas' : '');
 
   return (
     <TouchableOpacity
-      style={[styles.card, soon && styles.cardSoon]}
+      style={[styles.card, soon && styles.cardSoon, selected && styles.cardSelected]}
       onPress={onPress}
       disabled={!onPress}
       activeOpacity={0.75}
       accessibilityRole={onPress ? 'button' : 'text'}
       accessibilityLabel={spokenText}
-      accessibilityHint={onPress ? 'Abre os detalhes da linha' : undefined}
+      accessibilityHint={onPress ? hint : undefined}
+      accessibilityState={{ selected }}
     >
       <View style={[styles.lineBox, { backgroundColor: mode.color }]}>
         <Ionicons name={mode.icon} size={fonts.large} color={colors.textDark} />
@@ -51,6 +58,7 @@ export default function ArrivalCard({ arrival, now, onPress }: Props) {
       <View style={styles.timeBox}>
         <Text style={[styles.time, soon && styles.timeSoon]}>{formatWait(minutes)}</Text>
         <Text style={styles.clock}>{formatClock(arrival.arrivalAt)}</Text>
+        {showDistance && <Text style={styles.distance}>≈ {formatDistance(meters)}</Text>}
       </View>
     </TouchableOpacity>
   );
@@ -89,4 +97,6 @@ const styles = StyleSheet.create({
   time: { fontSize: fonts.large, fontWeight: 'bold', color: colors.text },
   timeSoon: { color: colors.primary },
   clock: { fontSize: fonts.small, color: colors.textMuted },
+  distance: { fontSize: fonts.small, fontWeight: 'bold', color: colors.bus },
+  cardSelected: { borderColor: colors.primary, backgroundColor: colors.cardLight },
 });
