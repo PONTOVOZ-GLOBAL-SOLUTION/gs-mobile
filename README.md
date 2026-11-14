@@ -11,8 +11,6 @@
 | **Jornada principal** | 1) O passageiro vê os próximos ônibus no totem → 2) digita para onde vai (o totem já mostra exemplos e confirma, enquanto ele digita, se o destino sai dali) → 3) vê quais ônibus vão e quais não vão, e as opções com a melhor em destaque → 4) se o destino não sai daquele ponto, vê o outro ponto e o caminho a pé até ele → 5) consulta os detalhes da linha → 6) a busca fica salva no histórico do totem. |
 | **Impacto esperado** | Menos tempo de espera, menos gente esperando no ponto errado, melhor distribuição dos passageiros entre as linhas e acesso à informação sem precisar de smartphone. |
 
-> ✏️ Ajustem a ficha acima para ficar igual à ficha oficial da equipe.
-
 ## Integrantes
 
 | Nome | RM | GitHub |
@@ -23,7 +21,7 @@
 
 ## Vídeo de demonstração
 
-🎥 _Coloquem aqui o link do YouTube (não listado, até 3 minutos)._
+https://youtu.be/D5Js7WKI6ao
 
 ---
 
@@ -104,7 +102,7 @@ npm run typecheck   # confere os tipos do TypeScript (tsc --noEmit)
 
 | Início do totem | Melhores opções | Pegue em outro ponto |
 |---|---|---|
-| ![Início](docs/prints/inicio.png) | ![Melhores opções](docs/prints/rotas.png) | ![Outro ponto](docs/prints/outro-ponto.png) |
+| ![Início](docs/prints/inicio.png) | ![Melhores opções](docs/prints/rotas.png) | <img width="460" height="841" alt="image" src="https://github.com/user-attachments/assets/bf0ef504-3b8e-4ba6-8527-ed5f8b9dba69" />|
 
 | Detalhes da linha | Buscas recentes (SQLite) | Histórico vazio | Destino não encontrado |
 |---|---|---|---|
